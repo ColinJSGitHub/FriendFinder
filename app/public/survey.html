@@ -9,6 +9,10 @@
     <script src="https://code.jquery.com/jquery.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
+    <!-- Chosen CSS for use with the various survey questions-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.5.1/chosen.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.5.1/chosen.jquery.min.js"></script>
+
     <!-- Font Awesome Glyphicons -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
 
@@ -191,5 +195,66 @@
      </div>
 
     </div>
+
+<script type="text/javascript">
+    // Chosen CSS for selecting items: threshold of 10 for the 10 survey questions
+    var config = {
+        '.chosen-select'           : {},
+        '.chosen-select-deselect'  : {allow_single_deselect:true},
+        '.chosen-select-no-single' : {disable_search_threshold:10},
+        '.chosen-select-no-results': {no_results_text:'Oops, nothing found!'},
+        '.chosen-select-width'     : {width:"95%"}
+    }
+
+    for (var selector in config) {
+        $(selector).chosen(config[selector]);
+    }
+
+    // Onclick functions to capture the form inputs (using the submit button)
+    $("#submit").on("click", function(){
+
+        // Functino to validate our form.
+        function validateForm() {
+            var isValid = true;
+            $('.form-control').each(function() {
+                if ( $(this).val() === '' )
+                    isValid = false;
+            });
+            $('.chosen-select').each(function() {
+                if( $(this).val() === "")
+                    isValid = false
+            })
+            return isValid;
+        }
+        // Checks to make sure the form has been validated completely, all questions/statements have a score...
+        if (validateForm() == true)
+        {
+            // Creates an object 'friendData' using the name, photo link, and various scores for the questions/statements
+            var friendData = {
+                name: $("#name").val(),
+                photo: $("#photo").val(),
+                scores: [$("#q1").val(), $("#q2").val(), $("#q3").val(), $("#q4").val(), $("#q5").val(), $("#q6").val(), $("#q7").val(), $("#q8").val(), $("#q9").val(), $("#q10").val(), ]
+            }
+
+            // variable to store the URL of the website
+            var currentURL = window.location.origin;
+
+            // AJAX posts the friendData to the API
+            $.post(currentURL + "/api/friends", friendData, function(data){
+                // Grab the result from the AJAX post so that the best match's name and photo are displayed.
+                $("#matchName").text(data.name);
+                $('#matchImg').attr("src", data.photo);
+                // Show the modal with the best match
+                $("#resultsModal").modal('toggle');
+            });
+        }
+        else
+        {
+            alert("Please answer all 10 of the survey items before submitting!");
+        }
+        return false;
+    });
+</script>
+
 </body>
 </html>
